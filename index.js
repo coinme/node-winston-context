@@ -79,16 +79,30 @@ WinstonContext.prototype.log = function log(level, name /*, metadata, callback*/
     var nonMeta = [];
 
     for(var i=0; i<args.length; i+=1) {
-        if (_isObject(args[i])) {
-            meta = _defaults(meta, args[i]);
+        var arg = args[i];
+        var is_error = (arg instanceof Error);
+
+        if (is_error) {
+            arg = arg.stack;
+        }
+
+        if (_isObject(arg)) {
+            meta = _defaults(meta, arg);
         } else {
-            nonMeta.push(args[i]);
+            nonMeta.push(arg);
         }
     }
 
-    this._parent.log.apply(this._parent,[level,this._prefix + name]
+    this._parent.log.apply(this._parent,
+        [
+            level,
+            this._prefix + name
+        ]
         .concat(nonMeta)
-        .concat([ _defaults({}, meta, this._metadata),callback]));
+        .concat([
+            _defaults({}, meta, this._metadata),
+            callback
+        ]));
 };
 
 // Helper function to install `getContext` on root winston logger
